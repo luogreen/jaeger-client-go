@@ -205,12 +205,12 @@ func (t *Tracer) StartSpan(
 	for _, o := range options {
 		o.Apply(&sso)
 	}
-	return t.startSpanWithOptions(operationName, sso)
+	return t.startSpanWithOptions(operationName, sso, 0, 0, 0)
 }
 
 func (t *Tracer) startSpanWithOptions(
 	operationName string,
-	options opentracing.StartSpanOptions,
+	options opentracing.StartSpanOptions, traceID uint64, spanID uint64, parentSpanID uint64,
 ) opentracing.Span {
 	if options.StartTime.IsZero() {
 		options.StartTime = t.timeNow()
@@ -309,6 +309,12 @@ func (t *Tracer) startSpanWithOptions(
 				}
 			}
 		}
+	}
+
+	if traceID != 0 {
+		ctx.traceID.Low = traceID
+		ctx.spanID = SpanID(spanID)
+		ctx.parentID = SpanID(parentSpanID)
 	}
 
 	sp := t.newSpan()
